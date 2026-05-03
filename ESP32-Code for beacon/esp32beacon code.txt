@@ -1,0 +1,57 @@
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+
+// Service and Characteristic UUIDs (You can generate your own)
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
+#define LED_PIN 2 // Built-in LED on most ESP32 boards
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("Starting BLE work!");
+
+  // 1. Initialize the device with a name
+  // IMPORTANT: This name starts with "Gautam", which matches your web app's namePrefix filter!
+  BLEDevice::init("Gautam Budha Statue");
+  
+  // 2. Create the BLE Server
+  BLEServer *pServer = BLEDevice::createServer();
+
+  // 3. Create the BLE Service
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // 4. Create a BLE Characteristic
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_UUID,
+                                         BLECharacteristic::PROPERTY_READ |
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+
+  pCharacteristic->setValue("Welcome to the Great Budha Statue!");
+  pService->start();
+  
+  // 5. Start Advertising so the Web App can see it!
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
+  
+  Serial.println("Now advertising 'gautam Budha'! Scan from your website.");
+}
+
+void loop() {
+  // Cool heartbeat double-blink effect
+  digitalWrite(LED_PIN, HIGH);
+  delay(100);
+  digitalWrite(LED_PIN, LOW);
+  delay(100);
+  digitalWrite(LED_PIN, HIGH);
+  delay(100);
+  digitalWrite(LED_PIN, LOW);
+  delay(1700);
+}
